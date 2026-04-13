@@ -1,18 +1,65 @@
 import React, { useState } from 'react';
-import { fplApi } from '../services/fplApi';
+import { useFPL } from '../context/FPLContext';
 
 const AIAssistant: React.FC = () => {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
+  const {
+    bootstrapData,
+    fixtures,
+    currentPicks,
+    getPlayer,
+    getTeam,
+    getCurrentGameweek,
+    getPicksForGameweek,
+    getFinancialStatus,
+    managerData,
+    selectedGameweek,
+  } = useFPL();
 
 
   // Simple rule-based FPL Q&A engine
 
-  function answerQuestion(question: string, data: any, fixtures: any[]): string {
+  function answerQuestion(question: string): string {
+    if (!bootstrapData || !fixtures) return 'FPL data not loaded.';
     const q = question.toLowerCase();
-    const players = data.elements;
-    const teams = data.teams;
+    const players = bootstrapData.elements;
+    const teams = bootstrapData.teams;
+    const currentGW = getCurrentGameweek();
+
+    // Suggest best team for upcoming gameweek
+    if (q.includes('best team') || q.includes('pick team') || q.includes('suggest team')) {
+      // Simple logic: pick top 11 players by total_points, 1 GK, 3 DEF, 4 MID, 3 FWD
+      const byType = (type: number, count: number) =>
+        players.filter(p => p.element_type === type && p.status === 'a')
+          .sort((a, b) => b.total_points - a.total_points)
+          .slice(0, count);
+      const squad = [
+        ...byType(1, 1), // GK
+        ...byType(2, 3), // DEF
+        ...byType(3, 4), // MID
+        ...byType(4, 3), // FWD
+      ];
+      return `Suggested best XI for GW${currentGW}:\n` +
+        squad.map(p => `${p.web_name} (${teams.find(t => t.id === p.team)?.short_name})`).join(', ');
+    }
+
+    // Suggest transfers or replacements
+    if (q.includes('suggest transfer') || q.includes('who to transfer') || q.includes('replacement')) {
+      if (!currentPicks) return 'No team data available.';
+      // Find injured/suspended players in current picks
+      const picks = currentPicks.picks.map(pick => getPlayer(pick.element)).filter(Boolean);
+      const out = picks.filter(p => p!.status !== 'a');
+      if (out.length === 0) return 'No urgent transfers needed. All your players are available.';
+      // Suggest best available replacement for each
+      const suggestions = out.map(player => {
+        const sameType = players.filter(p => p.element_type === player!.element_type && p.status === 'a');
+        const best = sameType.sort((a, b) => b.total_points - a.total_points)[0];
+        return `${player!.web_name}: Suggest replacing with ${best.web_name} (${teams.find(t => t.id === best.team)?.short_name})`;
+      });
+      return suggestions.join('\n');
+    }
 
     // Top scorer
     if (q.includes('top scorer') || q.includes('most points')) {
@@ -47,22 +94,19 @@ const AIAssistant: React.FC = () => {
 
     // Help
     if (q.includes('help') || q.includes('what can you do')) {
-      return 'Try questions like: Who is the top scorer? Who is the cheapest player? Who is the most selected player? What is the next fixture for Arsenal?';
+      return 'Try questions like: Who is the top scorer? Who is the cheapest player? Who is the most selected player? What is the next fixture for Arsenal? Suggest best team. Suggest transfers.';
     }
 
-    return "Sorry, I couldn't understand your question. Try asking about top scorers, cheapest players, most selected, or next fixtures.";
+    return "Sorry, I couldn't understand your question. Try asking about top scorers, cheapest players, most selected, next fixtures, best team, or transfer suggestions.";
   }
 
   const handleAsk = async () => {
     setLoading(true);
     setAnswer('');
     try {
-      // Fetch FPL data
-      const data = await fplApi.getBootstrapData();
-      const fixtures = await fplApi.getFixtures();
-      setAnswer(answerQuestion(question, data, fixtures));
+      setAnswer(answerQuestion(question));
     } catch (error) {
-      setAnswer('Error fetching data or processing question.');
+      setAnswer('Error processing question.');
     }
     setLoading(false);
   };
