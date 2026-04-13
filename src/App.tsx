@@ -13,6 +13,7 @@ import ComparePage from './pages/ComparePage';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import LoadingSpinner from './components/LoadingSpinner';
+import AIAssistantPage from './pages/AIAssistantPage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { managerData, loading } = useFPL();
@@ -108,6 +109,14 @@ const AppRoutes: React.FC = () => {
             </ProtectedRoute>
           }
         />
+          <Route
+            path="/ai"
+            element={
+              <ProtectedRoute>
+                <AIAssistantPage />
+              </ProtectedRoute>
+            }
+          />
         <Route path="/" element={<Navigate to="/team" replace />} />
         <Route path="*" element={<Navigate to="/team" replace />} />
       </Routes>

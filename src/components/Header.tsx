@@ -23,6 +23,7 @@ const Header: React.FC = () => {
     { path: '/status', label: 'Availability' },
     { path: '/comparison', label: 'Compare' },
     { path: '/leagues', label: 'Leagues' },
+    { path: '/ai', label: 'AI Assistant' },
   ];
 
   const currentPage = navItems.find(item => location.pathname === item.path)?.label || 'Menu';
