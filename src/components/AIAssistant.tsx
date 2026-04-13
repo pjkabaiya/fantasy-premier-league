@@ -8,7 +8,8 @@ const AIAssistant: React.FC = () => {
 
 
   // Simple rule-based FPL Q&A engine
-  function answerQuestion(question: string, data: any): string {
+
+  function answerQuestion(question: string, data: any, fixtures: any[]): string {
     const q = question.toLowerCase();
     const players = data.elements;
     const teams = data.teams;
@@ -34,9 +35,9 @@ const AIAssistant: React.FC = () => {
     // Next fixture for a team
     for (const team of teams) {
       if (q.includes(team.name.toLowerCase()) || q.includes(team.short_name.toLowerCase())) {
-        const fixtures = data.fixtures?.filter((f: any) => (f.team_h === team.id || f.team_a === team.id) && !f.finished);
-        if (fixtures && fixtures.length > 0) {
-          const next = fixtures[0];
+        const teamFixtures = fixtures?.filter((f: any) => (f.team_h === team.id || f.team_a === team.id) && !f.finished);
+        if (teamFixtures && teamFixtures.length > 0) {
+          const next = teamFixtures[0];
           const oppId = next.team_h === team.id ? next.team_a : next.team_h;
           const opp = teams.find((t: any) => t.id === oppId);
           return `The next fixture for ${team.name} is vs ${opp?.name || 'Unknown'} on ${next.kickoff_time?.split('T')[0]}`;
@@ -58,9 +59,8 @@ const AIAssistant: React.FC = () => {
     try {
       // Fetch FPL data
       const data = await fplApi.getBootstrapData();
-      // Optionally fetch fixtures for next fixture questions
-      data.fixtures = await fplApi.getFixtures();
-      setAnswer(answerQuestion(question, data));
+      const fixtures = await fplApi.getFixtures();
+      setAnswer(answerQuestion(question, data, fixtures));
     } catch (error) {
       setAnswer('Error fetching data or processing question.');
     }
