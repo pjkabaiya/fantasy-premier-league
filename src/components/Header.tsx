@@ -41,7 +41,7 @@ const Header: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <h1
-              className="text-2xl font-bold text-purple-600 dark:text-purple-400 cursor-pointer"
+              className="text-2xl font-bold text-primary-600 dark:text-accent-400 cursor-pointer"
               onClick={() => navigate('/team')}
             >
               FPL Planner
@@ -53,8 +53,8 @@ const Header: React.FC = () => {
                   onClick={() => navigate(item.path)}
                   className={`font-medium transition ${
                     location.pathname === item.path
-                      ? 'text-purple-600 dark:text-purple-400'
-                      : 'text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400'
+                      ? 'text-primary-600 dark:text-accent-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-accent-400'
                   }`}
                 >
                   {item.label}
@@ -66,7 +66,7 @@ const Header: React.FC = () => {
             <div className="md:hidden relative">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="flex items-center gap-2 px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 font-medium transition"
+                className="flex items-center gap-2 px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-accent-400 font-medium transition"
               >
                 <span>{currentPage}</span>
                 <svg
@@ -92,7 +92,7 @@ const Header: React.FC = () => {
                         onClick={() => handleNavClick(item.path)}
                         className={`w-full text-left px-4 py-2 transition ${
                           location.pathname === item.path
-                            ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-medium'
+                            ? 'bg-primary-50 dark:bg-accent-900/20 text-primary-600 dark:text-accent-400 font-medium'
                             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                         }`}
                       >
@@ -117,7 +117,7 @@ const Header: React.FC = () => {
 
             <button
               onClick={toggleDarkMode}
-              className="p-2 text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition"
+              className="p-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-accent-400 transition"
               title={isDarkMode ? 'Light mode' : 'Dark mode'}
             >
               {isDarkMode ? (
